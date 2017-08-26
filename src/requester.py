@@ -12,12 +12,20 @@ REGIONS = ['ru', 'kr', 'br1', 'oc1', 'jp1', 'na1', 'eun1', 'euw1', 'tr1', 'la1',
 region = 'euw1'
 key_url = '?api_key=' + KEY
 
+
 def sendRequest(post_url):
     """ Builds an http GET request and returns the response. """
-    return requests.get(''.join(['https://', region, '.api.riotgames.com', post_url, key_url]))
+    res = requests.get(''.join(['https://', region, '.api.riotgames.com', post_url, key_url]))
+
+    if res.status_code != 200:
+        print('Error code: %d, reason: %s' % (res.status_code, res.reason))
+        print(res.json())
+        exit(1)
+    else:
+        return res
+
 
 # Champion Mastery
-
 def getAllMastery(summonerId):
     """ Get all champion mastery entries sorted by number of champion points descending. """
     url = '/lol/champion-mastery/v3/champion-masteries/by-summoner/'
@@ -49,6 +57,13 @@ def getTotalMasteryScore(summonerId):
 #     """ Retrieve champion by ID. """
 #     url = '/lol/platform/v3/champions/'
 #     return sendRequest(''.join([url, str(championId)]))
+
+
+# League
+def get_elo(summonerId):
+    """ Get league positions in all queues for a given summoner ID. """
+    url = '/lol/league/v3/positions/by-summoner/'
+    return sendRequest(''.join([url, str(summonerId)])).json()
 
 # Lol Static Data
 '''
@@ -110,7 +125,7 @@ def getCurrentGame(summonerId):
     return sendRequest(''.join([url, str(summonerId)])).json()
 
 
-def getFeaturedGame():
+def getFeaturedGames():
     """ Get list of featured games. """
     url = '/lol/spectator/v3/featured-games'
     return sendRequest(url).json()
@@ -121,3 +136,10 @@ def getSummonerByName(summonerName):
     """ Get a summoner by summoner name. """
     url = '/lol/summoner/v3/summoners/by-name/'
     return sendRequest(''.join([url, summonerName])).json()
+
+
+# Match
+def getMatch(matchId):
+    """ Get match by match ID. """
+    url = '/lol/match/v3/matches/'
+    return sendRequest(''.join([url, str(matchId)])).json()
